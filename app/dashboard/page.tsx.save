@@ -1,0 +1,131 @@
+import { redirect } from 'next/navigation'
+import { createClient } from '@/utils/supabase/server'
+import PropertiesManager from '@/components/properties-manager'
+import ProjectsManager from '@/components/projects-manager'
+
+export default async function DashboardPage() {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    redirect('/login')
+  }
+
+  const { data: properties, error: propertiesError } = await supabase
+    .from('properties')
+    .select('*')
+    .eq('user_id', user.id)
+ import { redirect } from 'next/navigation'
+import { createClient } from '@/utils/supabase/server'
+import PropertiesManager from '@/components/properties-manager'
+import ProjectsManager from '@/components/projects-manager'
+
+export default async function DashboardPage() {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    redirect('/login')
+  }
+
+  const { data: properties, error: propertiesError } = await supabase
+    .from('properties')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  const { data: projects, error: projectsError } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (propertiesError) {
+    console.error('Error loading properties:', propertiesError.message)
+  }
+
+  if (projectsError) {
+    console.error('Error loading projects:', projectsError.message)
+  }
+
+  return (
+    <main className="min-h-screen p-6 space-y-8">
+      <header className="flex items-baseline justify-between gap-4 border-b pb-4">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-sm text-gray-600">
+            Signed in as <span className="font-medium">{user.email}</span>
+          </p>
+        </div>
+      </header>
+
+      <section className="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,2fr)]">
+        <div className="space-y-4">
+          />
+        </div>
+
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Projects</h2>
+          <ProjectsManager
+            initialProjects={projects ?? []}
+            properties={properties ?? []}
+            userId={user.id}
+          />
+        </div>
+      </section>
+    .order('created_at', { ascending: false })
+
+  const { data: projects, error: projectsError } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (propertiesError) {
+    console.error('Error loading properties:', propertiesError.message)
+  }
+
+  if (projectsError) {
+    console.error('Error loading projects:', projectsError.message)
+  }
+
+  return (
+    <main className="min-h-screen p-6 space-y-8">
+      <header className="flex items-baseline justify-between gap-4 border-b pb-4">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-sm text-gray-600">
+            Signed in as <span className="font-medium">{user.email}</span>
+          </p>
+        </div>
+      </header>
+
+      <section className="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,2fr)]">
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Properties</h2>
+          <PropertiesManager
+            initialProperties={properties ?? []}
+            userId={user.id}
+          />
+        </div>
+
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Projects</h2>
+          <ProjectsManager
+            initialProjects={projects ?? []}
+            properties={properties ?? []}
+            userId={user.id}
+          />
+        </div>
+      </section>
+    </main>
+  )
+}
