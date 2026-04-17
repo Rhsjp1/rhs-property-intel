@@ -30,8 +30,8 @@ export default function DashboardShell({
   initialProjects: Project[]
   userId: string
 }) {
-  const [properties, setProperties] = useState<Property[]>(initialProperties)
-  const [projects, setProjects] = useState<Project[]>(initialProjects)
+  const [properties] = useState<Property[]>(initialProperties)
+  const [projects] = useState<Project[]>(initialProjects)
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(
     initialProperties[0]?.id ?? null,
   )
@@ -49,21 +49,18 @@ export default function DashboardShell({
     [projects, selectedProperty],
   )
 
-  const urgentAlerts = useMemo(
-    () =>
-      selectedProperty
-        ? ([
-            'Review drainage paths and standing water risk',
-            'Check roof edge, gutters, and downspout discharge',
-            'Inspect crawlspace/foundation moisture signs',
-            'Verify HVAC service date and filter cycle',
-          ] as string[])
-        : [],
-    [selectedProperty],
-  )
+  const urgentAlerts = useMemo(() => {
+    if (!selectedProperty) return []
+
+    return [
+      'Check drainage flow and low spots near the structure.',
+      'Review roof runoff, gutter discharge, and erosion patterns.',
+      'Document recurring moisture, vegetation, or structural concerns.',
+    ]
+  }, [selectedProperty])
 
   return (
-    <main className="min-h-screen bg-black text-white px-6 py-8 space-y-8 max-w-6xl mx-auto">
+    <main className="min-h-screen max-w-6xl mx-auto space-y-8 bg-black px-6 py-8 text-white">
       <header className="flex items-baseline justify-between gap-4 border-b border-gray-800 pb-4">
         <div>
           <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
@@ -149,23 +146,25 @@ export default function DashboardShell({
                       Runoff direction, pooling, erosion, gutter discharge, grading near foundation.
                     </p>
                   </div>
+
                   <div className="rounded-md border border-gray-800 p-3">
                     <p className="font-medium">Roof, envelope & moisture</p>
                     <p className="text-sm text-gray-400">
                       Shingles, flashing, soffits, siding, stains, soft spots, intrusion signals.
                     </p>
                   </div>
+
                   <div className="rounded-md border border-gray-800 p-3">
-                    <p className="font-medium">Mechanical, plumbing & electrical</p>
+                    <p className="font-medium">Vegetation & exterior control</p>
                     <p className="text-sm text-gray-400">
-                      HVAC service dates, leak history, panel notes, GFCI status, water heater age.
+                      Tree clearance, root pressure, vine growth, pests, and access obstruction.
                     </p>
                   </div>
+
                   <div className="rounded-md border border-gray-800 p-3">
-                    <p className="font-medium">Grounds, trees & adaptive changes</p>
+                    <p className="font-medium">Foundation & movement clues</p>
                     <p className="text-sm text-gray-400">
-                      Limb strike risk, root pressure, vegetation overgrowth, irrigation, hardscape
-                      shifts.
+                      Settlement, cracking, sticking openings, slope change, and repeat movement.
                     </p>
                   </div>
                 </div>
@@ -173,44 +172,37 @@ export default function DashboardShell({
             </div>
           ) : (
             <div className="rounded-lg border border-gray-800 bg-black p-4 text-sm text-gray-400">
-              No property selected yet. Click a property card below to begin maintenance
-              intelligence tracking.
+              Select a property to view focused oversight details.
             </div>
           )}
         </div>
 
-        <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5 space-y-5">
-          <div>
-            <h2 className="text-2xl font-semibold">Maintenance Watchlist</h2>
-            <p className="text-sm text-gray-400">
-              Preventive attention areas that help avoid damage, neglect, and expensive surprises.
-            </p>
+        <div className="space-y-5">
+          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+            <p className="text-xs uppercase tracking-wide text-gray-500">Active watch list</p>
+
+            {urgentAlerts.length > 0 ? (
+              <ul className="mt-3 space-y-3 text-sm text-gray-300">
+                {urgentAlerts.map((alert) => (
+                  <li key={alert} className="rounded-md border border-gray-800 bg-black p-3">
+                    {alert}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="mt-3 rounded-lg border border-gray-800 bg-black p-4 text-sm text-gray-400">
+                No active watch items yet. Add and select a property to start surfacing oversight
+                needs.
+              </div>
+            )}
           </div>
 
-          {urgentAlerts.length > 0 ? (
-            <div className="space-y-3">
-              {urgentAlerts.map((alert, index) => (
-                <div
-                  key={index}
-                  className="rounded-lg border border-amber-700/40 bg-amber-950/20 p-4"
-                >
-                  <p className="text-sm font-medium text-amber-200">{alert}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-lg border border-gray-800 bg-black p-4 text-sm text-gray-400">
-              No active watch items yet. Add and select a property to start surfacing oversight
-              needs.
-            </div>
-          )}
-
-          <div className="rounded-lg border border-gray-800 bg-black p-4">
+          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
             <p className="text-xs uppercase tracking-wide text-gray-500">History & awareness</p>
             <ul className="mt-3 space-y-2 text-sm text-gray-400">
-              >Track recurring issues, storm impact, inspections, and repairs.</li>
-              >Log changes in grading, moisture, vegetation, and structural condition.</li>
-              >Flag anything that is getting worse, repeating, or overdue.</li>
+              <li>Track recurring issues, storm impact, inspections, and repairs.</li>
+              <li>Log changes in grading, moisture, vegetation, and structural condition.</li>
+              <li>Flag anything that is getting worse, repeating, or overdue.</li>
             </ul>
           </div>
         </div>
@@ -220,10 +212,42 @@ export default function DashboardShell({
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Properties</h2>
           <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 space-y-4">
-            <PropertiesManager
-              initialProperties={properties}
-              userId={userId}
-            />
+            <PropertiesManager initialProperties={properties} userId={userId} />
+          </div>
+
+          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <p className="text-sm text-gray-400">Click a property below to focus the dashboard.</p>
+            <div className="mt-4 grid gap-3">
+              {properties.length > 0 ? (
+                properties.map((property) => (
+                  <button
+                    key={property.id}
+                    type="button"
+                    onClick={() => setSelectedPropertyId(property.id)}
+                    className={`rounded-lg border p-4 text-left transition ${
+                      selectedPropertyId === property.id
+                        ? 'border-white bg-white text-black'
+                        : 'border-gray-800 bg-black text-white hover:border-gray-600'
+                    }`}
+                  >
+                    <p className="font-medium">{property.name}</p>
+                    <p
+                      className={`mt-1 text-sm ${
+                        selectedPropertyId === property.id ? 'text-gray-700' : 'text-gray-400'
+                      }`}
+                    >
+                      {[property.address, property.city, property.state]
+                        .filter(Boolean)
+                        .join(', ') || 'No location details yet'}
+                    </p>
+                  </button>
+                ))
+              ) : (
+                <div className="rounded-lg border border-gray-800 bg-black p-4 text-sm text-gray-400">
+                  No properties yet.
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
