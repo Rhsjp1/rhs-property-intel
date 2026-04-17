@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
   const [message, setMessage] = useState('')
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -28,6 +29,29 @@ export default function LoginPage() {
     }
 
     window.location.href = '/dashboard'
+  }
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setMessage('Enter your email first, then click Forgot password.')
+      return
+    }
+
+    setResetLoading(true)
+    setMessage('')
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://rhs-property-intel.vercel.app/auth/callback',
+    })
+
+    setResetLoading(false)
+
+    if (error) {
+      setMessage(error.message)
+      return
+    }
+
+    setMessage('Password reset email sent. Check your inbox.')
   }
 
   return (
@@ -67,6 +91,15 @@ export default function LoginPage() {
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
+
+        <button
+          type="button"
+          onClick={handleForgotPassword}
+          disabled={resetLoading}
+          className="w-full border rounded px-4 py-2"
+        >
+          {resetLoading ? 'Sending reset email...' : 'Forgot password?'}
+        </button>
 
         {message && (
           <p className="text-sm text-red-600">{message}</p>
